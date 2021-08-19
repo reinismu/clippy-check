@@ -44,15 +44,20 @@ export async function run(actionInput: input.Input): Promise<void> {
     if (actionInput.toolchain) {
         args.push(`+${actionInput.toolchain}`);
     }
+
     args.push('clippy');
     // `--message-format=json` should just right after the `cargo clippy`
     // because usually people are adding the `-- -D warnings` at the end
     // of arguments and it will mess up the output.
     args.push('--message-format=json');
 
+    if (actionInput.workingDirectory) {
+        args.push(`--manifest-path ${actionInput.workingDirectory}/Cargo.toml`);
+    }
+
     args = args.concat(actionInput.args);
 
-    let runner = new CheckRunner();
+    let runner = new CheckRunner(actionInput.workingDirectory);
     let clippyExitCode: number = 0;
     try {
         core.startGroup('Executing cargo clippy (JSON output)');
